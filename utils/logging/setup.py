@@ -1,5 +1,5 @@
 """
-Модуль для настройки конфигурации логирования в приложении.
+Настройка конфигурации логирования и установка логгера.
 
 Этот модуль содержит функции и настройки, необходимые для создания и 
 конфигурации логгера. Он позволяет настраивать формат логов, уровень 
@@ -14,6 +14,7 @@ logger = setup_logger(<module_name>, <file_name>)
 
 ### Пример созданной файловой структуры:
 ```
+root
 ├── logs
 │   ├── 2024
 │   │   ├── June
@@ -45,44 +46,9 @@ except Exception as e:
 import logging
 
 from utils.fs.manager import FileSystemManager
-
-DEFAULT_LOG_ENCODING = "utf-8"
-DEFAULT_LOG_FORMAT = (f"%(asctime)s\n"
-                      f"%(name)s\n"
-                      f"|—— Путь до модуля (%(filename)s):\n%(pathname)s\n"
-                      f"|—— Функция и строка: %(funcName)s:%(lineno)d\n"
-                      f"|—— Уровень: [%(levelno)s — %(levelname)s]\n"
-                      f"|—— Результат: %(message)s\n\n"
-                      )
-
-
-def create_logger(name: str = None) -> logging.Logger:
-    """Создает логгер."""
-
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
-
-    return logger
-
-
-def create_logger_file_handler(
-    log_file: str,
-    log_level: int = logging.INFO,
-    encoding: str = DEFAULT_LOG_ENCODING
-    ) -> logging.FileHandler:
-    """Создает обработчик для записи логов в файл."""
-
-    file_handler = logging.FileHandler(log_file, encoding=encoding)
-    file_handler.setLevel(log_level)
-
-    return file_handler
-
-
-def create_logger_formatter(log_format: str = DEFAULT_LOG_FORMAT) \
-    -> logging.Formatter:
-    """Создает форматтер для записи логов."""
-    formatter = logging.Formatter(log_format)
-    return formatter
+from utils.logging.build import (
+    LoggerBuilder, DEFAULT_LOG_ENCODING, DEFAULT_LOG_FORMAT
+    )
 
 
 def handle_log_directory_creation(module_name: str, file_name: str) -> str:
@@ -143,13 +109,16 @@ def setup_logger(
 
     log_file_path = handle_log_directory_creation(module_name, file_name)
 
-    logger = create_logger(logger_name)
+    logger_builder = LoggerBuilder()
 
-    file_handler = create_logger_file_handler(
+    logger = logger_builder.create_logger(logger_name, log_level)
+
+    file_handler = logger_builder.create_logger_file_handler(
         log_file_path, log_level, encoding
         )
-    formatter = create_logger_formatter(log_format)
-    file_handler.setFormatter(formatter)
+    file_handler.setFormatter(
+        logger_builder.create_logger_formatter(log_format)
+        )
 
     logger.addHandler(file_handler)
 

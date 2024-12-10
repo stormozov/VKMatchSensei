@@ -2,7 +2,7 @@
 
 from db.models.models import Base, engine
 from utils.fs.name_fmt import get_module_part
-from utils.logging.config import setup_logger
+from utils.logging.setup import setup_logger
 
 logger = setup_logger(get_module_part(__name__, index=0), logger_name=__name__)
 
