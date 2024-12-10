@@ -1,6 +1,10 @@
 """Модуль для менеджера управления схемой базы данных."""
 
 from db.models.models import Base, engine
+from utils.fs.name_fmt import get_module_part
+from utils.logging.config import setup_logger
+
+logger = setup_logger(get_module_part(__name__, index=0), logger_name=__name__)
 
 
 class DatabaseSchemaManager:
@@ -13,23 +17,25 @@ class DatabaseSchemaManager:
     - `recreate_tables()`: Метод для перезаписи всех таблиц в базе данных.
     """
 
-    def create_tables(self):
+    def create_tables(self) -> None:
         """Создает все таблицы в БД, описанные в моделях."""
         try:
             Base.metadata.create_all(engine)
+            logger.info("Таблицы успешно созданы.")
         except Exception as e:
-            print("Ошибка при создании таблиц:", e)
+            logger.error(f"Ошибка при создании таблиц:\n{e}")
 
-    def drop_tables_cascade(self):
+    def drop_tables_cascade(self) -> None:
         """
         Каскадно удаляет все таблицы из БД независимо от наличия в них данных.
         """
         try:
             Base.metadata.drop_all(engine)
+            logger.info("Таблицы успешно удалены.")
         except Exception as e:
-            print("Ошибка при удалении таблиц:", e)
+            logger.error(f"Ошибка при удалении таблиц:\n{e}")
 
-    def recreate_tables(self):
+    def recreate_tables(self) -> None:
         """
         Перезаписывает все таблицы в БД независимо от наличия в них данных.
         
@@ -38,5 +44,7 @@ class DatabaseSchemaManager:
           при перезаписи будут потеряны.
         """
 
+        logger.info("Начинаю перезапись таблиц...")
         self.drop_tables_cascade()
         self.create_tables()
+        logger.info("Таблицы успешно перезаписаны.")
