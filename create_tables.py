@@ -1,6 +1,6 @@
 """Модуль для создания таблиц в базе данных."""
 
-from db.managers.schema import DatabaseSchemaManager
+from db.managers.schema_manager import DatabaseSchemaManager
 
 
 if __name__ == "__main__":

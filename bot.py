@@ -27,12 +27,13 @@ import vk_api
 from vk_api.longpoll import VkEventType, VkLongPoll
 from dotenv import load_dotenv
 
+from handlers.command_handler import CommandHandler
 from utils.fs.name_fmt import get_module_part
 from utils.logging.setup import setup_logger
 
 load_dotenv()
 
-logger = setup_logger(get_module_part(__name__, idx=0), logger_name=__name__)
+logger = setup_logger(get_module_part("main", idx=0), logger_name="main_script")
 
 
 class VKMatchSenseiBot:
@@ -91,12 +92,22 @@ class VKMatchSenseiBot:
 
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                request = event.text.strip().lower()
                 self.user_id = event.user_id
-                self.send_message(self.user_id, "Привет!")
+                self.handlers(request)
+
+    def handlers(self, request: str) -> None:
+        """Обработчики событий."""
+
+        command_handler = CommandHandler()
+        
+        if request == "/start":
+            command_handler.start_handler(self.user_id)
 
 
 def main() -> None:
     bot = VKMatchSenseiBot(os.getenv("VK_GROUP_TOKEN"))
+    print("Бот запущен!")
     bot.run()
 
 

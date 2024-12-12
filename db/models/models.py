@@ -1,24 +1,30 @@
 """Модуль для определения моделей для работы с базой данных.
 
-Этот модуль содержит определения моделей для работы с базой данных в приложении. 
-Модели описывают структуру таблиц и их взаимосвязи.
+Этот модуль содержит определения моделей для работы с базой данных в 
+приложении. Модели описывают структуру таблиц и их взаимосвязи.
 
 ### Модели:
 - `User`: Модель для хранения информации о пользователях.
 - `Matches`: Модель для хранения информации о матчах между пользователями.
 
-
+### Дополнительно определены следующие объекты:
+- `engine`: Объект для подключения к базе данных.
+- `Session`: Класс для работы с сессиями базы данных.
+- `Base`: Базовый класс для определения моделей для работы с базой данных.
 """
 
 import os
-from sqlalchemy import Column, Integer, String, ForeignKey, create_engine
-from sqlalchemy.orm import relationship, DeclarativeBase
+from sqlalchemy import (
+    Column, Integer, SmallInteger, String, ForeignKey, create_engine
+)
+from sqlalchemy.orm import relationship, DeclarativeBase, sessionmaker
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 engine = create_engine(os.getenv("DSN"))
+Session = sessionmaker(bind=engine)
 
 
 class Base(DeclarativeBase):
@@ -35,12 +41,13 @@ class User(Base):
     user_id = Column(Integer, nullable=False, unique=True)
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
-    gender = Column(Integer)
-    location = Column(String(100))
+    sex = Column(Integer)
+    city_id = Column(SmallInteger)
+    city_title = Column(String(100))
     profile_url = Column(String(255), nullable=False)
 
     matches = relationship(
-        "Matches", backref="user", cascade="all, delete-orphan"
+        "Matches", back_populates="user", cascade="all, delete-orphan"
     )
 
     def __str__(self) -> str:
@@ -67,7 +74,7 @@ class Matches(Base):
     profile_url = Column(String(255), nullable=False)
     photo = Column(String(255))
 
-    user = relationship("User", backref="matches")
+    user = relationship("User", back_populates="matches")
 
     def __str__(self) -> str:
         return (
