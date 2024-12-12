@@ -73,24 +73,9 @@ class FileSystemManager:
     }
     sep_in_path = "/"
 
-    def get_full_path_with_placeholders(self, path: str) -> str:
-        """
-        Формирует полный путь к файлу или директории с поддержкой заменителей.
-        
-        ### Примеры заменителей:
-        - `<<Y>>` — Формирует название директории или файла по текущему году.
-        - `<<M>>` — Формирует название директории или файла по текущему месяцу.
-        
-        ### Аргументы:
-        - `path` (str): Путь в формате "utils.timetools.tools".
-        """
-
-        path = self._replace_placeholders_in_path(path)
-        return os.path.join(os.getcwd(), *path.split(self.sep_in_path))
-
     def get_full_path(self, path: str, is_placeholder: bool = False) -> str:
         """
-        Формирует полный путь к файлу или директории.
+        Формирует полный путь к файлу или директории с поддержкой заменителей.
         
         ### Аргументы:
         - `path` (str): Путь до нужной директории или файла от корня проекта.
@@ -98,13 +83,19 @@ class FileSystemManager:
           директории или "utils/timetools/tools/file.log" для файла.
         - `is_placeholder` (bool, optional): Флаг, указывающий, 
           нужно ли заменять заменители в пути. По умолчанию `False`.
+        
+        ### Примеры заменителей:
+        - `<<Y>>` — Формирует название директории или файла по текущему году.
+        - `<<M>>` — Формирует название директории или файла по текущему месяцу.
         """
 
-        return (
-            self.get_full_path_with_placeholders(path)
+        path_parts = (
+            self._replace_placeholders_in_path(path)
             if is_placeholder
-            else os.path.join(os.getcwd(), *path.split(self.sep_in_path))
+            else path
         )
+
+        return os.path.join(os.getcwd(), *path_parts.split(self.sep_in_path))
 
     def create_dir_or_file(
         self, path: str, content: str = "", is_placeholder: bool = False
@@ -137,8 +128,8 @@ class FileSystemManager:
         """Заменяет все заменители в пути, если они есть."""
 
         for _, placeholder in self.placeholders.items():
-            placeholder_str = placeholder["placeholder"]
+            placeholder_str = placeholder.get("placeholder")
             if placeholder_str in path:
-                path = path.replace(placeholder_str, placeholder["func"])
+                path = path.replace(placeholder_str, placeholder.get("func"))
 
         return path

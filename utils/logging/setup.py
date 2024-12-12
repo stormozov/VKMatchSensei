@@ -45,7 +45,7 @@ except Exception as e:
 
 import logging
 
-from utils.fs.manager import FileSystemManager
+from utils.fs.fs_manager import FileSystemManager
 from utils.logging.build import (
     LoggerBuilder, DEFAULT_LOG_ENCODING, DEFAULT_LOG_FORMAT
     )
@@ -78,7 +78,7 @@ def setup_logger(
     log_level: int = logging.INFO,
     encoding: str = DEFAULT_LOG_ENCODING,
     logger_name: str = "vk_match_sensei"
-) -> logging.Logger:
+    ) -> logging.Logger:
     """
     Настройка логирования для указанного модуля.
     
