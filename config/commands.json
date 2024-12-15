@@ -1,0 +1,15 @@
+{
+    "data": {
+        "start" : {
+            "command": ["/start", "начать", "Начать"],
+            "keyboard": {
+                "layout": [
+                    ["Настроить поиск", "positive"]
+                ],
+                "one_time": true,
+                "inline": false
+            },
+            "message": "Привет! Я бот для поиска мэтчей"
+        }
+    }
+}

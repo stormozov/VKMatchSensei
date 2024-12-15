@@ -1,5 +1,6 @@
 """Обработчики базовых команд бота."""
 
+from config.bot_config import KEYBOARD_CONFIG, MESSAGES_CONFIG
 from db.managers.user_manager import DatabaseUserManager
 from services.vk_service import VKApiService
 
@@ -9,11 +10,16 @@ db_user_manager = DatabaseUserManager()
 
 class BasicHandler:
     """Обработчик базовых команд бота."""
-    
-    def start_handler(self, user_id: int) -> None:
-        """Обработчик команды `/start`."""
 
-        # TODO: Реализовать вывод стартового сообщения пользователю.
+    def start_handler(self, user_id: int, send_message: object) -> None:
+        """Обработчик команды "/start"."""
+
+        # Отправка сообщения пользователю в чате.
+        send_message(
+            user_id,
+            msg=MESSAGES_CONFIG.get("start", ""),
+            btns=KEYBOARD_CONFIG.get("start", {}),
+            )
 
         # Получение информации о пользователе по его ID.
         fetched_user_data: dict = vk_service.get_user_info(user_id)
@@ -23,7 +29,7 @@ class BasicHandler:
 
         # Поиск пользователей по заданным параметрам.
         # TODO: Реализовать поиск пользователей по заданным параметрам.
-        
+
         # Форматирование результата поиска пользователей.
         # TODO: Реализовать форматирование результата поиска пользователей.
 

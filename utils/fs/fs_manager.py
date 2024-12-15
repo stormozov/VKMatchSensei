@@ -23,7 +23,8 @@
 ### Пример использования:
 ```python
 manager = FileSystemManager()
-full_path = manager.get_full_path_with_placeholders("logs/<<Y>>/<<M>>/<<Y-M-D>>.log")
+full_path = \
+manager.get_full_path_with_placeholders("logs/<<Y>>/<<M>>/<<Y-M-D>>.log")
 print(full_path)  # Выводит: "logs/2023/05/2023-05-01.log"
 """
 
@@ -57,7 +58,7 @@ class FileSystemManager:
     ```
     """
 
-    placeholders = {
+    __placeholders = {
         "date": {
             "placeholder": "<<Y-M-D>>",
             "func": timetools.get_current_time("%Y-%m-%d")
@@ -71,7 +72,7 @@ class FileSystemManager:
             "func": timetools.get_current_time("%B")
         }
     }
-    sep_in_path = "/"
+    __default_encoding = "utf-8"
 
     def get_full_path(self, path: str, is_placeholder: bool = False) -> str:
         """
@@ -90,12 +91,12 @@ class FileSystemManager:
         """
 
         path_parts = (
-            self._replace_placeholders_in_path(path)
+            self.__replace_placeholders_in_path(path)
             if is_placeholder
             else path
         )
 
-        return os.path.join(os.getcwd(), *path_parts.split(self.sep_in_path))
+        return os.path.join(os.getcwd(), *path_parts.split("/"))
 
     def create_dir_or_file(
         self, path: str, content: str = "", is_placeholder: bool = False
@@ -119,15 +120,27 @@ class FileSystemManager:
 
         if '.' in os.path.basename(full_path):
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            with open(full_path, "a", encoding="utf-8") as file:
+            with open(full_path, "a", encoding=self.__default_encoding) as file:
                 file.write(content)
         else:
             os.makedirs(full_path, exist_ok=True)
 
-    def _replace_placeholders_in_path(self, path: str) -> str:
+    def check_dir_or_file_exists(self, path: str) -> bool:
+        """Проверка существования директории."""
+        return os.path.exists(self.get_full_path(path))
+
+    def list_files_in_dir(self, path: str) -> list:
+        """Получение списка файлов в директории, указанной по пути."""
+        return (
+            os.listdir(self.get_full_path(path))
+            if self.check_dir_or_file_exists(path)
+            else []
+        )
+
+    def __replace_placeholders_in_path(self, path: str) -> str:
         """Заменяет все заменители в пути, если они есть."""
 
-        for _, placeholder in self.placeholders.items():
+        for _, placeholder in self.__placeholders.items():
             placeholder_str = placeholder.get("placeholder")
             if placeholder_str in path:
                 path = path.replace(placeholder_str, placeholder.get("func"))

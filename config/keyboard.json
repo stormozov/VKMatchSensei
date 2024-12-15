@@ -1,0 +1,16 @@
+{
+    "data": {
+        "start": {
+            "actions": [
+                {
+                    "type": "text",
+                    "label": "Настроить поиск",
+                    "payload": "{\"command\": \"configure\"}"
+                }
+            ],
+            "color": "primary",
+            "one_time": true,
+            "inline": false
+        }
+    }
+}

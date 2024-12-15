@@ -5,12 +5,6 @@
 API ВКонтакте для отправки сообщений пользователям и обработки событий 
 в чате группы.
 
-### Импортируемые библиотеки:
-- `os`: Для работы с операционной системой и переменными окружения.
-- `vk_api`: Библиотека для работы с API ВКонтакте.
-- `vk_api.longpoll`: Модуль для работы с API ВКонтакте через LongPoll.
-- `dotenv`: Для работы с переменными окружения.
-
 ### Классы:
 - `VKMatchSenseiBot`: Основной класс бота, который управляет всеми функциями.
 
@@ -29,6 +23,7 @@ from dotenv import load_dotenv
 
 from handlers.command_handler import CommandHandler
 from utils.fs.name_fmt import get_module_part
+from utils.keyboard.keyboard import VKKeyboardManager
 from utils.logging.setup import setup_logger
 
 load_dotenv()
@@ -38,6 +33,9 @@ logger = setup_logger(get_module_part("main", idx=0), logger_name="main_script")
 
 class VKMatchSenseiBot:
     """Бот VKMatchSensei."""
+
+    __cmd_handler = CommandHandler()
+    __keyboard = VKKeyboardManager()
 
     def __init__(self, group_token: str) -> None:
 
@@ -56,37 +54,6 @@ class VKMatchSenseiBot:
             logger.error(error_msg)
             raise error_msg
 
-    def send_message(
-        self,
-        user_id: int,
-        msg: str,
-        attachment: str = None,
-        ) -> None:
-        """
-        Отправка сообщения пользователю в чате.
-        
-        ### Аргументы:
-        - `user_id` (int): Идентификатор пользователя.
-        - `msg` (str): Текст сообщения.
-        - `attachment` (str, optional): Приложение.
-        
-        ### Примеры:
-        ```python
-        >>> send_message(123456, "Привет!")
-        >>> send_message(123456, "Привет!", attachment="photo123456_123456")
-        ```
-        """
-
-        self.vk.method(
-            "messages.send",
-            {
-                "user_id": user_id,
-                "message": msg,
-                "attachment": attachment,
-                "random_id": 0
-            }
-        )
-
     def run(self) -> None:
         """Запускает бот."""
 
@@ -96,16 +63,56 @@ class VKMatchSenseiBot:
                 self.user_id = event.user_id
                 self.handlers(request)
 
+    def send_message(
+        self,
+        user_id: int,
+        msg: str,
+        btns: dict = None,
+        attachment: str = None
+        ) -> None:
+        """
+        Отправка сообщения пользователю в чате.
+        
+        ### Аргументы:
+        - user_id (int): Идентификатор пользователя, которому будет \
+            отправлено сообщение.
+        - msg (str): Текст сообщения.
+        - btns (str): Словарь с настройками клавиатуры, которые будут \
+            преобразованы в JSON для последующей отправки боту. \
+            По умолчанию None.
+        - attachment (str, optional): Прикрепленная картинка. Нужно указать \
+            в виде строки. По умолчанию None.
+        
+        ### Примеры:
+        ```python
+        >>> send_message(123456, "Привет!")
+        >>> send_message(123456, "Привет!", attachment="photo123456_123456")
+        ```
+        """
+
+        if btns is not None:
+            btns = self.__keyboard.create_markup(btns)
+
+        self.vk.method(
+            "messages.send",
+            {
+                "user_id": user_id,
+                "message": msg,
+                "keyboard": btns,
+                "attachment": attachment,
+                "random_id": 0
+            }
+        )
+
     def handlers(self, request: str) -> None:
         """Обработчики событий."""
 
-        command_handler = CommandHandler()
-        
-        if request == "/start":
-            command_handler.start_handler(self.user_id)
+        if request in ("/start", "/начать", "начать"):
+            self.__cmd_handler.start_handler(self.user_id, self.send_message)
 
 
 def main() -> None:
+    """Запуск бота."""
     bot = VKMatchSenseiBot(os.getenv("VK_GROUP_TOKEN"))
     print("Бот запущен!")
     bot.run()
