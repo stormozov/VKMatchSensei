@@ -1,20 +1,22 @@
-"""Модуль вспомогательных функций для работы с именами модулей."""
+"""Сервис форматирования именен модулей."""
 
 from utils.logging.setup import setup_logger
 
 
-def format_module_name(module: str, sep: str = "_") -> str:
+def replace_sep_in_module_name(
+    module: str, old_sep: str = ".", new_sep: str = "_"
+    ) -> str:
     """
     Возвращает имя модуля в формате, который можно использовать в имени файла 
     или директории.
     
     ### Например:
     ```python
-    >>> format_module_name("utils.fs.formatter")
+    >>> replace_sep_in_module_name("utils.fs.formatter")
     >>> # => 'utils_fs_formatter'
     ```
     """
-    return module.replace(".", sep)
+    return module.replace(old_sep, new_sep)
 
 
 def get_module_part(module: str, idx: int = -1, sep: str = ".") -> str:
@@ -22,10 +24,10 @@ def get_module_part(module: str, idx: int = -1, sep: str = ".") -> str:
     Возвращает часть строки, разделенной по разделителю.
     
     ### Аргументы:
-    - `module` (str): Строка, которую нужно разделить.
-    - `idx` (int): Индекс части строки, которую нужно вернуть. 
+    - module (str): Строка, которую нужно разделить.
+    - idx (int): Индекс части строки, которую нужно вернуть. 
       По умолчанию будет получена последняя часть (индекс -1).
-    - `sep` (str): Разделитель. По умолчанию `.`
+    - sep (str): Разделитель. По умолчанию `.`
     
     ### Примеры:
     ```python
@@ -40,13 +42,15 @@ def get_module_part(module: str, idx: int = -1, sep: str = ".") -> str:
 
     if not module:
         logger.error(
-            "Строка не содержит никаких символов. Возвращена пустая строка."
+            "Строка не содержит никаких символов. Возвращена строка 'default'.",
             )
-        return ""
+        return "default"
 
     if sep not in module:
         logger.error(
-            "Строка не содержит разделителя. Возвращена строка без изменений."
+            "Строка '%s' не содержит разделителя. \
+            Возвращена строка без изменений.",
+            module
             )
         return module
 
@@ -54,13 +58,14 @@ def get_module_part(module: str, idx: int = -1, sep: str = ".") -> str:
 
     if idx < -len(parts) or idx >= len(parts):
         logger.error(
-            f"Индекс ({idx}) выходит за пределы доступных частей "
-            f"({len(parts)}).\nБыл выбран последний индекс (-1).\n"
-            f"Был передан модуль: '{module}'.\nВозвращен: '{parts[-1]}'."
+            "Индекс (%s) выходит за пределы доступных частей ({len(parts)}).\n\
+            Был выбран последний индекс (-1).\n\
+            Был передан модуль: '%s'.\nВозвращен: '%s'.",
+            idx, module, parts[-1]
             )
         return parts[-1]
 
     return parts[idx]
 
 
-logger = setup_logger(get_module_part(__name__, idx=0), logger_name=__name__)
+logger = setup_logger(get_module_part(__name__, idx=1), logger_name=__name__)

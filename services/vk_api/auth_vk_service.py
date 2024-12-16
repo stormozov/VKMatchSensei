@@ -2,7 +2,7 @@
 
 import vk_api
 
-from utils.fs.name_fmt import get_module_part
+from services.formatters.module_formatters import get_module_part
 from utils.logging.setup import setup_logger
 
 

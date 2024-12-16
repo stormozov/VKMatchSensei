@@ -3,7 +3,7 @@
 import os
 from vk_api.keyboard import VkKeyboard
 
-from services.auth_vk_service import AuthVKService
+from services.vk_api.auth_vk_service import AuthVKService
 
 
 class MessageService:

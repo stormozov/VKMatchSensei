@@ -2,8 +2,8 @@
 
 from config.bot_config import KEYBOARD_CONFIG, MESSAGES_CONFIG
 from db.managers.user_manager import DatabaseUserManager
-from services.msg_service import MessageService
-from services.vk_service import VKApiService
+from services.vk_api.msg_service import MessageService
+from services.vk_api.vk_api_service import VKApiService
 
 vk_service = VKApiService()
 db_user_manager = DatabaseUserManager()

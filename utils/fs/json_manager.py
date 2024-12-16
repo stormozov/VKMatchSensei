@@ -3,8 +3,8 @@
 import os
 import json
 
+from services.formatters.module_formatters import get_module_part
 from utils.fs.fs_manager import FileSystemManager
-from utils.fs.name_fmt import get_module_part
 from utils.logging.setup import setup_logger
 
 logger = setup_logger(get_module_part(__name__), logger_name=__name__)

@@ -21,7 +21,7 @@ from vk_api.longpoll import VkEventType, VkLongPoll
 from dotenv import load_dotenv
 
 from handlers.command_handler import CommandHandler
-from services.auth_vk_service import AuthVKService
+from services.vk_api.auth_vk_service import AuthVKService
 
 load_dotenv()
 

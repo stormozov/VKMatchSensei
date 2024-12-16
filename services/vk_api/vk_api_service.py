@@ -34,7 +34,7 @@ class VKApiService:
             "status": 6,
         }
 
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
 
         return response.json().get("response", {}).get("items", [])
 
@@ -49,6 +49,6 @@ class VKApiService:
             "fields": "city, sex",
         }
 
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
 
         return response.json().get("response", [])[0]
