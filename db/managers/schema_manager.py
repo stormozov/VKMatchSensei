@@ -27,7 +27,7 @@ class DatabaseSchemaManager:
             Base.metadata.create_all(engine)
             self.logger.info("Таблицы успешно созданы.")
         except Exception as e:
-            self.logger.error(f"Ошибка при создании таблиц:\n{e}")
+            self.logger.error("Ошибка при создании таблиц:\n%s", e)
 
     def drop_tables_cascade(self) -> None:
         """
@@ -37,7 +37,7 @@ class DatabaseSchemaManager:
             Base.metadata.drop_all(engine)
             self.logger.info("Таблицы успешно удалены.")
         except Exception as e:
-            self.logger.error(f"Ошибка при удалении таблиц:\n{e}")
+            self.logger.error("Ошибка при удалении таблиц:\n%s", e)
 
     def recreate_tables(self) -> None:
         """

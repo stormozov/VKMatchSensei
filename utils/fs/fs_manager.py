@@ -1,17 +1,17 @@
 """
 Модуль для работы с файлами и директориями.
 
-Этот модуль содержит класс `FileSystemManager`, который предоставляет 
-методы для создания, чтения и управления файлами и директориями. 
-Класс поддерживает использование заменителей в путях, что позволяет 
-автоматически формировать имена файлов и директорий на основе 
+Этот модуль содержит класс FileSystemManager, который предоставляет \
+методы для создания, чтения и управления файлами и директориями. \
+Класс поддерживает использование заменителей в путях, что позволяет \
+автоматически формировать имена файлов и директорий на основе \
 текущего времени.
 
-### Основные методы класса `FileSystemManager`:
-- `get_full_path_with_placeholders`: Формирует полный путь к файлу или 
+### Основные методы класса FileSystemManager:
+- get_full_path_with_placeholders: Формирует полный путь к файлу или \
   директории с поддержкой заменителей.
-- `get_full_path`: Формирует полный путь к файлу или директории.
-- `create_dir_or_file`: Создает директорию или файл по указанному пути, 
+- get_full_path: Формирует полный путь к файлу или директории.
+- create_dir_or_file: Создает директорию или файл по указанному пути, \
   поддерживает заменители.
 
 ### Заменители:
@@ -79,24 +79,31 @@ class FileSystemManager:
         Формирует полный путь к файлу или директории с поддержкой заменителей.
         
         ### Аргументы:
-        - `path` (str): Путь до нужной директории или файла от корня проекта.
-          Формат передаваемого пути должен быть "utils/timetools/tools" для 
+        - path (str): Путь до нужной директории или файла от корня проекта. \
+          Формат передаваемого пути должен быть "utils/timetools/tools" для \
           директории или "utils/timetools/tools/file.log" для файла.
-        - `is_placeholder` (bool, optional): Флаг, указывающий, 
-          нужно ли заменять заменители в пути. По умолчанию `False`.
+        - is_placeholder (bool, optional): Флаг, указывающий, \
+          нужно ли заменять заменители в пути. По умолчанию False.
         
         ### Примеры заменителей:
         - `<<Y>>` — Формирует название директории или файла по текущему году.
         - `<<M>>` — Формирует название директории или файла по текущему месяцу.
+
+        ### Исключения:
+        - ValueError: Если аргумент "path" не является строкой, \
+          либо аргумент "is_placeholder" не является bool, либо путь содержит \
+          недопустимые символы в качестве разделителей.
         """
 
-        path_parts = (
+        self.__validate_get_full_path_args(path, is_placeholder)
+
+        input_path = (
             self.__replace_placeholders_in_path(path)
             if is_placeholder
             else path
-        )
+            )
 
-        return os.path.join(os.getcwd(), *path_parts.split("/"))
+        return os.path.join(os.getcwd(), *input_path.split("/"))
 
     def create_dir_or_file(
         self, path: str, content: str = "", is_placeholder: bool = False
@@ -105,21 +112,29 @@ class FileSystemManager:
         Создает директорию или файл по указанному пути.
         
         Поддерживает заменители. Для их использования необходимо 
-        установить флаг `is_placeholder` в `True` и передать путь в формате
+        установить флаг "is_placeholder" в "True" и передать путь в формате
         "logs/<<Y>>/<<M>>".
-        
+
         ### Аргументы:
-        - `path` (str): Путь до нужной директории или файла от корня проекта.
-          Формат передаваемого пути должен быть "utils/timetools/tools" для 
+        - path (str): Путь до нужной директории или файла от корня проекта. \
+          Формат передаваемого пути должен быть "utils/timetools/tools" для \
           директории или "utils/timetools/tools/file.log" для файла.
-        - `is_placeholder` (bool, optional): Флаг, указывающий, 
-          нужно ли заменять заменители в пути. По умолчанию `False`.
+        - content (str, optional): Содержимое файла (по умолчанию "").
+        - is_placeholder (bool, optional): Флаг, указывающий, \
+          нужно ли заменять заменители в пути. По умолчанию False.
         """
 
         full_path = self.get_full_path(path, is_placeholder)
 
         if '.' in os.path.basename(full_path):
+            if not isinstance(content, str):
+                content = ""
+
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+            if not self.check_dir_or_file_exists(full_path):
+                return None
+
             with open(full_path, "a", encoding=self.__default_encoding) as file:
                 file.write(content)
         else:
@@ -135,14 +150,33 @@ class FileSystemManager:
             os.listdir(self.get_full_path(path))
             if self.check_dir_or_file_exists(path)
             else []
-        )
+            )
 
     def __replace_placeholders_in_path(self, path: str) -> str:
         """Заменяет все заменители в пути, если они есть."""
 
         for _, placeholder in self.__placeholders.items():
-            placeholder_str = placeholder.get("placeholder")
-            if placeholder_str in path:
-                path = path.replace(placeholder_str, placeholder.get("func"))
+            placeholder_key = placeholder.get("placeholder")
+            if placeholder_key in path:
+                path = path.replace(placeholder_key, placeholder.get("func"))
 
         return path
+
+    def __validate_get_full_path_args(self, path: str, is_placeholder: bool) \
+        -> None:
+        """Проверка параметров перед настройкой логирования."""
+
+        if not path:
+            raise ValueError("Аргумент 'path' не может быть пустым.")
+
+        if not isinstance(path, str):
+            raise ValueError(f"Аргумент 'path' должен быть строкой, \
+                             а был передан тип '{type(path)}'")
+
+        if path in ("\\", "\"", "|", ":", "*", "?", "<", ">", " ", "'", '"'):
+            raise ValueError("В качестве разделителя директорий в аргументе \
+                             'path' необходимо использовать '/'.")
+
+        if not isinstance(is_placeholder, bool):
+            raise ValueError(f"Аргумент 'is_placeholder' должен быть bool, \
+                             а был передан тип '{type(is_placeholder)}'")
