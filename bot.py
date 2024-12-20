@@ -53,6 +53,9 @@ class VKMatchSenseiBot:
 
         if request in ("/start", "/начать", "начать"):
             self.__cmd_handler.start_handler(self.user_id)
+        if request in ("настроить поиск", "настроить пол" ):
+            print(request)
+            self.__cmd_handler.search_settings_handler(request, self.user_id)
 
 
 def main() -> None:

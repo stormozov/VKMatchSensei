@@ -5,6 +5,7 @@
 
 ### Модели:
 - `User`: Модель для хранения информации о пользователях.
+- `UserSettings`: Модель для хранения настроек пользователя.
 - `Matches`: Модель для хранения информации о матчах между пользователями.
 
 ### Дополнительно определены следующие объекты:
@@ -29,7 +30,6 @@ Session = sessionmaker(bind=engine)
 
 class Base(DeclarativeBase):
     """Базовый класс для определения моделей для работы с базой данных."""
-    pass
 
 
 class User(Base):
@@ -49,6 +49,12 @@ class User(Base):
     matches = relationship(
         "Matches", back_populates="user", cascade="all, delete-orphan"
     )
+    settings = relationship(
+        "UserSearchSettings",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
 
     def __str__(self) -> str:
         return f"User(id={self.id}, first_name='{self.first_name}')"
@@ -56,8 +62,54 @@ class User(Base):
     def __repr__(self) -> str:
         return (
             f"<User(id={self.id}, first_name='{self.first_name}', "
-            f"last_name='{self.last_name}', age={self.age}, "
-            f"gender='{self.gender}', location='{self.location}')>"
+            f"last_name='{self.last_name}', sex={self.sex}, "
+            f"city_title='{self.city_title}')>"
+        )
+
+
+class UserSearchSettings(Base):
+    """Модель для хранения настроек пользователя для поиска мэтчей.
+    
+    ### Атрибуты:
+    - id (int): Уникальный идентификатор записи.
+    - user_id (int): Внешний ключ, ссылающийся на пользователя.
+    - age_min (int): Минимальный возраст для поиска (по умолчанию 18).
+    - age_max (int): Максимальный возраст для поиска (по умолчанию 99).
+    - sex (int): Предпочитаемый пол (0 - любой, 1 - женский, 2 - мужской).
+    - city_id (int): ID города для поиска (по умолчанию 1).
+    - city_title (str): Название города для поиска (по умолчанию "Москва").
+    - relation (int): Семейное положение (по умолчанию 0 - не указано).
+
+    ### Отношения:
+    - user (User): Объект пользователя, которому принадлежат настройки.
+    """
+
+    __tablename__ = "user_settings"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("users.user_id"),
+        nullable=False,
+        unique=True
+    )
+    age_min = Column(SmallInteger, nullable=False, default=18)
+    age_max = Column(SmallInteger, nullable=False, default=99)
+    sex = Column(SmallInteger, default=0)
+    city_id = Column(SmallInteger, default=1)
+    city_title = Column(String(100), default="Москва")
+    relation = Column(SmallInteger, default=0)
+
+    user = relationship("User", back_populates="settings")
+
+    def __str__(self) -> str:
+        return f"UserSettings(id={self.id}, user_id={self.user_id})"
+
+    def __repr__(self) -> str:
+        return (
+            f"<UserSettings(id={self.id}, user_id={self.user_id}, "
+            f"age_min={self.age_min}, age_max={self.age_max}, "
+            f"sex={self.sex}, city_title='{self.city_title}')>"
         )
 
 
