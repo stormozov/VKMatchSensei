@@ -17,7 +17,7 @@ if __name__ == "__main__":
 """
 
 import os
-import json
+
 from vk_api.longpoll import VkEventType, VkLongPoll
 from dotenv import load_dotenv
 
@@ -42,34 +42,24 @@ class VKMatchSenseiBot:
         """Запускает бот."""
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                # Получаем текст сообщения
                 request = event.text.strip().lower()
                 self.user_id = event.user_id
-
-                # Проверяем наличие payload в сообщении
-                try:
-                    payload = json.loads(event.payload)
-                    # Если есть payload, обрабатываем его
-                    self.handle_payload(payload, request)
-                except (json.JSONDecodeError, AttributeError):
-                    # Если payload нет или он некорректен, обрабатываем текст
-                    self.handle_message(request)
-
-    def handle_payload(self, payload: dict, request: str) -> None:
-        """Обработка сообщений с payload от кнопок."""
-        # Передаем в обработчик настроек поиска и текст, и payload
-        self.__cmd_handler.search_settings_handler(request, self.user_id)
+                self.handle_message(request)
 
     def handle_message(self, request: str) -> None:
         """Обработка текстовых сообщений."""
+
         if request in ("/start", "/начать", "начать"):
             self.__cmd_handler.start_handler(self.user_id)
-        elif request in ("настроить поиск",):
+        elif request == "настроить поиск":
+            self.__cmd_handler.search_settings_handler(request, self.user_id)
+        elif self.__cmd_handler.is_in_search_settings(self.user_id):
+            # Передаем сообщение в обработчик настроек только если пользователь
+            # находится в процессе настройки
             self.__cmd_handler.search_settings_handler(request, self.user_id)
         else:
-            # Все остальные сообщения передаем в обработчик настроек
-            # для обработки текстового ввода (например, возраст или город)
-            self.__cmd_handler.search_settings_handler(request, self.user_id)
+            # Обработка неизвестных команд
+            self.__cmd_handler.handle_unknown_message(self.user_id)
 
 
 def main() -> None:
