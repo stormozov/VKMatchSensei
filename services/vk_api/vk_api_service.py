@@ -52,3 +52,39 @@ class VKApiService:
         response = requests.get(url, params=params, timeout=10)
 
         return response.json().get("response", [])[0]
+
+    def get_city_info(self, query: str) -> dict | None:
+        """
+        Получение информации о городе по его названию через API ВКонтакте.
+        
+        ### Аргументы:
+        - query (str): Название города для поиска.
+        
+        ### Возвращает:
+        - dict: Словарь с информацией о городе или None, \
+          если город не найден. Формат возвращаемого словаря: \
+          {'id': int, 'title': str}
+        - None: Если город не найден, либо возникло исключение \
+          "RequestException", "KeyError", "IndexError"
+        """
+
+        url = self.api_url + "database.getCities"
+        params = {
+            "access_token": self.token,
+            "v": self.api_version,
+            "country_id": 1,
+            "q": query,
+            "count": 1,
+            "need_all": 0
+        }
+
+        try:
+            data = requests.get(url, params=params, timeout=10).json()
+
+            if "response" in data and "items" in data["response"] \
+                and data["response"]["items"]:
+                city = data["response"]["items"][0]
+                return {"id": city["id"], "title": city["title"]}
+            return None
+        except (requests.RequestException, KeyError, IndexError):
+            return None

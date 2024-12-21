@@ -11,6 +11,89 @@
             "color": "primary",
             "one_time": true,
             "inline": false
+        },
+        "configure_sex": {
+            "actions": [
+                {
+                    "type": "text",
+                    "label": "Любой",
+                    "payload": "{\"sex\": 0}"
+                },
+                {
+                    "type": "text",
+                    "label": "Женский",
+                    "payload": "{\"sex\": 1}"
+                },
+                {
+                    "type": "text",
+                    "label": "Мужской", 
+                    "payload": "{\"sex\": 2}"
+                }
+            ],
+            "one_time": true,
+            "inline": false
+        },
+        "configure_age": {
+            "actions": [
+                {
+                    "type": "text",
+                    "label": "Пропустить",
+                    "payload": "{\"skip_age\": true}"
+                }
+            ],
+            "one_time": true,
+            "inline": false
+        },
+        "configure_relation": {
+            "actions": [
+                {
+                    "type": "text",
+                    "label": "0",
+                    "payload": "{\"relation\": 0}"
+                },
+                {
+                    "type": "text",
+                    "label": "1",
+                    "payload": "{\"relation\": 1}"
+                },
+                {
+                    "type": "text",
+                    "label": "2",
+                    "payload": "{\"relation\": 2}"
+                },
+                {
+                    "type": "text",
+                    "label": "3",
+                    "payload": "{\"relation\": 3}"
+                },
+                {
+                    "type": "text",
+                    "label": "4",
+                    "payload": "{\"relation\": 4}"
+                },
+                {
+                    "type": "text",
+                    "label": "5",
+                    "payload": "{\"relation\": 5}"
+                },
+                {
+                    "type": "text",
+                    "label": "6",
+                    "payload": "{\"relation\": 6}"
+                },
+                {
+                    "type": "text",
+                    "label": "7",
+                    "payload": "{\"relation\": 7}"
+                },
+                {
+                    "type": "text",
+                    "label": "8",
+                    "payload": "{\"relation\": 8}"
+                }
+            ],
+            "one_time": true,
+            "inline": false
         }
     }
 }
