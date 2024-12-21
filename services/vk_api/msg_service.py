@@ -1,7 +1,7 @@
 """Сервис для работы с сообщениями бота."""
 
 import os
-from vk_api.keyboard import VkKeyboard
+from vk_api.keyboard import MAX_BUTTONS_ON_LINE, VkKeyboard, VkKeyboardColor
 
 from services.vk_api.auth_vk_service import AuthVKService
 
@@ -75,13 +75,41 @@ class MessageService:
         keyboard = VkKeyboard(
             one_time=btns.get("one_time", True),
             inline=btns.get("inline", False)
-            )
+        )
 
-        for btn in btns.get("actions", []):
-            keyboard.add_button(
-                label=btn.get("label"),
-                color=btn.get("color", "secondary"),
-                payload=btn.get("payload", None)
-                )
+        actions = btns.get("actions", [])
+        if actions and isinstance(actions[0], list):
+            self._add_buttons_by_rows(keyboard, actions)
+        else:
+            self._add_buttons_in_line(keyboard, actions)
 
         return keyboard
+
+    def _add_buttons_by_rows(self, keyboard: VkKeyboard, rows: list[list[dict]]) \
+        -> None:
+        """Метод для добавления кнопки в клавиатуру по строкам."""
+        for row_index, row in enumerate(rows):
+            if row_index > 0:
+                keyboard.add_line()
+            self._add_buttons_in_line(keyboard, row)
+
+    def _add_buttons_in_line(self, keyboard: VkKeyboard, buttons: list[dict]) \
+        -> None:
+        """
+        Метод для добавления кнопки в одну строку клавиатуры.
+        
+        ### Исключения:
+        - ValueError: Если количество кнопок в строке превышает максимальное.
+        """
+
+        if len(buttons) > MAX_BUTTONS_ON_LINE:
+            raise ValueError(
+                f"Макс. кол-во кнопок в одной строке - {MAX_BUTTONS_ON_LINE}"
+            )
+
+        for btn in buttons:
+            keyboard.add_button(
+                label=btn.get("label"),
+                color=btn.get("color", VkKeyboardColor.SECONDARY),
+                payload=btn.get("payload", None)
+            )

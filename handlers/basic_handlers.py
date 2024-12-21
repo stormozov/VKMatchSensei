@@ -133,7 +133,7 @@ class BasicHandler:
         self.__msg_service.send_message(
             user_id,
             msg=MESSAGES_CONFIG.get("configure_city", MESSAGES_CONFIG.get("error")),
-            btns=None,  # Здесь не нужны кнопки, так как пользователь вводит текст
+            btns=None,
         )
 
     def __handle_city_setting(self, user_id: int, request: str) -> None:
@@ -165,23 +165,17 @@ class BasicHandler:
 
     def __handle_relation_setting(self, user_id: int, request: str) -> None:
         """Обработка настройки семейного положения."""
-        relation_mapping = {
-            "не указано": 0,
-            "не женат/не замужем": 1,
-            "в активном поиске": 6
-        }
 
-        relation = relation_mapping.get(request)
-        if relation is None:
+        if not re.match(r"^[0-8]$", request) or request is None:
             self.__msg_service.send_message(
                 user_id,
-                "Пожалуйста, выберите один из предложенных вариантов.",
+                "Пожалуйста, выберите один из предложенных вариантов: 0-8.",
                 btns=KEYBOARD_CONFIG.get("configure_relation", None),
             )
             return
 
         # Сохраняем настройку семейного положения
-        db_user_manager.update_user_settings(user_id, {"relation": relation})
+        db_user_manager.update_user_settings(user_id, {"relation": int(request)})
 
         # Завершаем настройку
         del self.__user_states[user_id]  # Очищаем состояние пользователя
