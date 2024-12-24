@@ -192,5 +192,5 @@ class SearchSettingsHandler:
                 "configure_search_settings_success",
                 MESSAGES_CONFIG.get("error")
             ),
-            btns=KEYBOARD_CONFIG.get("start", None),
+            btns=KEYBOARD_CONFIG.get("main_menu", None),
         )

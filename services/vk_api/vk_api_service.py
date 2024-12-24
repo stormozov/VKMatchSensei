@@ -88,3 +88,37 @@ class VKApiService:
             return None
         except (requests.RequestException, KeyError, IndexError):
             return None
+
+    def get_group_info(self, city_id: int, query: str) -> list:
+        """Поиск групп по заданному запросу."""
+
+        url = self.api_url + "groups.search"
+        params = {
+            "access_token": self.token,
+            "v": self.api_version,
+            "q": query,
+            "city_id": city_id,
+            "sort": 6,
+            "count": 1,
+        }
+
+        response = requests.get(url, params=params, timeout=10)
+        response = response.json().get("response", {}).get("items", [])
+
+        return response
+
+    def get_group_members(self, group_id: int, offset: int = 0) -> list[dict]:
+        """Получение списка участников группы."""
+
+        url = self.api_url + "groups.getMembers"
+        params = {
+            "access_token": self.token,
+            "v": self.api_version,
+            "group_id": group_id,
+            "count": 1000,
+            "offset": offset,
+            "fields": "city,sex,last_seen,bdate,relation,can_write_private_message",
+        }
+
+        response = requests.get(url, params=params, timeout=10)
+        return response.json().get("response", {}).get("items", [])

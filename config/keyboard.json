@@ -12,6 +12,24 @@
             "one_time": true,
             "inline": false
         },
+        "main_menu": {
+            "actions": [
+                {
+                    "type": "text",
+                    "label": "Настроить поиск",
+                    "color": "primary",
+                    "payload": "{\"command\": \"configure\"}"
+                },
+                {
+                    "type": "text",
+                    "label": "Начать поиск",
+                    "color": "positive",
+                    "payload": "{\"command\": \"start_searching\"}"
+                }
+            ],
+            "one_time": true,
+            "inline": false
+        },
         "configure_sex": {
             "actions": [
                 {

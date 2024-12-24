@@ -57,6 +57,8 @@ class VKMatchSenseiBot:
             # Передаем сообщение в обработчик настроек только если пользователь
             # находится в процессе настройки
             self.__cmd_handler.search_settings_handler(request, self.user_id)
+        elif request == "начать поиск":
+            self.__cmd_handler.start_searching(self.user_id)
         else:
             # Обработка неизвестных команд
             self.__cmd_handler.handle_unknown_message(self.user_id)
