@@ -2,7 +2,7 @@
 
 import re
 
-from config.bot_config import KEYBOARD_CONFIG, MESSAGES_CONFIG
+from config.bot_config import COMMANDS_CONFIG, KEYBOARD_CONFIG, MESSAGES_CONFIG
 from db.managers.user_manager import DatabaseUserManager
 from services.vk_api.msg_service import MessageService
 from services.vk_api.vk_api_service import VKApiService
@@ -27,7 +27,7 @@ class SearchSettingsHandler:
         """Обработчик настройки поиска."""
 
         # Инициализация настройки поиска
-        if request == "настроить поиск":
+        if request in COMMANDS_CONFIG.get("configure_search_settings"):
             self.__start_search_settings(user_id)
             return
 

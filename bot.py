@@ -21,6 +21,7 @@ import os
 from vk_api.longpoll import VkEventType, VkLongPoll
 from dotenv import load_dotenv
 
+from config.bot_config import COMMANDS_CONFIG
 from handlers.command_handler import CommandHandler
 from services.vk_api.auth_vk_service import AuthVKService
 
@@ -49,15 +50,15 @@ class VKMatchSenseiBot:
     def handle_message(self, request: str) -> None:
         """Обработка текстовых сообщений."""
 
-        if request in ("/start", "/начать", "начать"):
+        if request in COMMANDS_CONFIG.get("start"):
             self.__cmd_handler.start_handler(self.user_id)
-        elif request == "настроить поиск":
+        elif request in COMMANDS_CONFIG.get("configure_search_settings"):
             self.__cmd_handler.search_settings_handler(request, self.user_id)
         elif self.__cmd_handler.is_in_search_settings(self.user_id):
             # Передаем сообщение в обработчик настроек только если пользователь
             # находится в процессе настройки
             self.__cmd_handler.search_settings_handler(request, self.user_id)
-        elif request == "начать поиск":
+        elif request in COMMANDS_CONFIG.get("start_searching"):
             self.__cmd_handler.start_searching(self.user_id)
         else:
             # Обработка неизвестных команд
