@@ -117,7 +117,8 @@ class VKApiService:
             "group_id": group_id,
             "count": 1000,
             "offset": offset,
-            "fields": "city,sex,last_seen,bdate,relation,can_write_private_message",
+            "fields": "city,sex,last_seen,bdate,relation,\
+                can_write_private_message,photo_max_orig,photo_max",
         }
 
         response = requests.get(url, params=params, timeout=10)

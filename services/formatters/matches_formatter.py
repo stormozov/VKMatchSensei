@@ -13,4 +13,5 @@ def format_matches(match: dict) -> dict:
         "first_name": match.get("first_name", ""),
         "last_name": match.get("last_name", ""),
         "profile_url": user_formatter.get_user_vk_link(match.get("id")),
+        "photo": match.get("photo_max", match.get("photo_max_orig", None)),
     }

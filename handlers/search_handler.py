@@ -66,8 +66,8 @@ class SearchHandler:
         self,
         group_members: list[dict],
         search_settings: UserSearchSettings,
-        group_info: list
-        ) -> list:
+        group_info: list[dict]
+        ) -> list[dict]:
         """Обработка команды поиска результата."""
 
         offset = 0
