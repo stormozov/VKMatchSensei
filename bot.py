@@ -16,6 +16,7 @@ if __name__ == "__main__":
 ```
 """
 
+import json
 import os
 
 from vk_api.longpoll import VkEventType, VkLongPoll
@@ -23,7 +24,14 @@ from dotenv import load_dotenv
 
 from config.bot_config import COMMANDS_CONFIG
 from handlers.command_handler import CommandHandler
+from services.formatters.module_formatters import get_module_part
 from services.vk_api.auth_vk_service import AuthVKService
+from utils.logging.setup import setup_logger
+
+logger = setup_logger(
+    module_name=get_module_part(__name__, idx=0),
+    logger_name=__name__
+)
 
 load_dotenv()
 
@@ -45,9 +53,9 @@ class VKMatchSenseiBot:
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                 request = event.text.strip().lower()
                 self.user_id = event.user_id
-                self.handle_message(request)
+                self.handle_message(request, event)
 
-    def handle_message(self, request: str) -> None:
+    def handle_message(self, request: str, event) -> None:
         """Обработка текстовых сообщений."""
 
         if request in COMMANDS_CONFIG.get("start"):
@@ -60,6 +68,22 @@ class VKMatchSenseiBot:
             self.__cmd_handler.search_settings_handler(request, self.user_id)
         elif request in COMMANDS_CONFIG.get("start_searching"):
             self.__cmd_handler.start_searching(self.user_id)
+        elif request in COMMANDS_CONFIG.get("show_matches"):
+            self.__cmd_handler.show_matches(self.user_id)
+        elif request in COMMANDS_CONFIG.get("next_match"):
+            # Получаем payload из события для определения текущего индекса
+            payload_str = getattr(event, 'payload', None)
+            if payload_str:
+                try:
+                    payload = json.loads(payload_str)
+                    logger.info("Получен payload: %s", payload)
+                    current_index = int(payload.get('match_index', 0))
+                    self.__cmd_handler.show_matches(self.user_id, current_index + 1)
+                except (json.JSONDecodeError, ValueError) as e:
+                    logger.error("Ошибка при обработке payload: %s", str(e))
+                    self.__cmd_handler.handle_unknown_message(self.user_id)
+            else:
+                self.__cmd_handler.show_matches(self.user_id)
         else:
             # Обработка неизвестных команд
             self.__cmd_handler.handle_unknown_message(self.user_id)

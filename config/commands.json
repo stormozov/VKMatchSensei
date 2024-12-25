@@ -2,6 +2,8 @@
     "data": {
         "start": ["/start", "Начать", "начать"],
         "configure_search_settings": ["/configure_search", "настроить поиск"],
-        "start_searching": ["/start_searching", "начать поиск"]
+        "start_searching": ["/start_searching", "начать поиск"],
+        "show_matches": ["/show_matches", "показать мэтчи"],
+        "next_match": ["/next_match", "следующий"]
     }
 }

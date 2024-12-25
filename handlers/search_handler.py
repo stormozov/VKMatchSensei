@@ -1,6 +1,7 @@
 """Обработка команды поиска."""
 
-from config.bot_config import MESSAGES_CONFIG
+import copy
+from config.bot_config import KEYBOARD_CONFIG, MESSAGES_CONFIG
 from db.managers.matches_manager import DatabaseMatchesManager
 from db.managers.user_manager import DatabaseUserManager
 from db.models.models import UserSearchSettings
@@ -158,3 +159,73 @@ class SearchHandler:
             for member in group_members
             if member.get("can_write_private_message", 0) == 1
         ]
+
+    def show_matches(self, user_id: int, match_index: int = 0) -> None:
+        """Показывает найденные мэтчи пользователя по одному."""
+
+        matches_manager = DatabaseMatchesManager()
+        matches = matches_manager.get_user_matches(user_id)
+
+        logger.info(
+            "Получено %d мэтчей для пользователя %d",
+            len(matches) if matches else 0, user_id
+        )
+
+        if not matches:
+            self.__msg_service.send_message(
+                user_id,
+                msg=MESSAGES_CONFIG.get(
+                    "no_matches_found", MESSAGES_CONFIG.get("error")
+                ),
+                btns=KEYBOARD_CONFIG["main_menu"]
+            )
+            return
+
+        # Проверяем валидность индекса
+        if match_index >= len(matches):
+            logger.info(
+                "Индекс %d превышает количество мэтчей, сброс на начало",
+                match_index
+            )
+            match_index = 0
+
+        if match_index == 0:
+            self.__msg_service.send_message(
+                user_id,
+                msg=MESSAGES_CONFIG.get(
+                    "show_matches_start", MESSAGES_CONFIG.get("error")
+                ) % len(matches)
+            )
+
+        current_match = matches[match_index]
+        match_msg = MESSAGES_CONFIG.get(
+            "show_match_template", MESSAGES_CONFIG.get("error")
+        ).format(
+            first_name=current_match.first_name,
+            last_name=current_match.last_name,
+            profile_url=current_match.profile_url
+        )
+
+        # Определяем какую клавиатуру показывать
+        keyboard_name = (
+            "match_navigation"
+            if match_index < len(matches) - 1
+            else "main_menu"
+        )
+        logger.info(
+            "Используется клавиатура %s для индекса %d из %d", 
+            keyboard_name, match_index, len(matches)
+        )
+
+        keyboard = copy.deepcopy(KEYBOARD_CONFIG[keyboard_name])
+        if keyboard_name == "match_navigation":
+            # Форматируем payload для следующего индекса
+            keyboard["actions"][0]["payload"] = (
+                keyboard["actions"][0]["payload"] % (match_index + 1)
+            )
+
+        self.__msg_service.send_message(
+            user_id,
+            msg=match_msg,
+            btns=keyboard
+        )

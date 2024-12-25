@@ -25,6 +25,12 @@
                     "label": "Начать поиск",
                     "color": "positive",
                     "payload": "{\"command\": \"start_searching\"}"
+                },
+                {
+                    "type": "text",
+                    "label": "Показать мэтчи",
+                    "color": "secondary",
+                    "payload": "{\"command\": \"show_matches\"}"
                 }
             ],
             "one_time": true,
@@ -115,6 +121,24 @@
                 ]
             ],
             "one_time": true,
+            "inline": false
+        },
+        "match_navigation": {
+            "actions": [
+                {
+                    "type": "text",
+                    "label": "Следующий",
+                    "color": "primary",
+                    "payload": "{\"command\": \"next_match\", \"match_index\": %d}"
+                },
+                {
+                    "type": "text",
+                    "label": "В меню",
+                    "color": "secondary",
+                    "payload": "{\"command\": \"main_menu\"}"
+                }
+            ],
+            "one_time": false,
             "inline": false
         }
     }
