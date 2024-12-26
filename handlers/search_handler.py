@@ -1,6 +1,7 @@
 """Обработка команды поиска."""
 
 import copy
+import json
 from config.bot_config import KEYBOARD_CONFIG, MESSAGES_CONFIG
 from db.managers.matches_manager import DatabaseMatchesManager
 from db.managers.user_manager import DatabaseUserManager
@@ -235,3 +236,26 @@ class SearchHandler:
             btns=keyboard,
             attachment=attachment
         )
+
+    def handle_next_match(self, user_id: int, event) -> None:
+        """Обработка команды показа следующего мэтча."""
+
+        payload_str = getattr(event, 'payload', None)
+        if payload_str:
+            try:
+                payload = json.loads(payload_str)
+                logger.info("Получен payload: %s", payload)
+                current_index = int(payload.get('match_index', 0))
+                next_index = current_index + 1
+                self.show_matches(user_id, next_index)
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.error("Ошибка при обработке payload: %s", str(e))
+                self.__msg_service.send_message(
+                    user_id,
+                    msg=MESSAGES_CONFIG.get(
+                        "unknown_command", MESSAGES_CONFIG.get("error")
+                    ),
+                    btns=KEYBOARD_CONFIG.get("main_menu"),
+                )
+        else:
+            self.show_matches(user_id)

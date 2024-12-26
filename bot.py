@@ -16,7 +16,6 @@ if __name__ == "__main__":
 ```
 """
 
-import json
 import os
 
 from vk_api.longpoll import VkEventType, VkLongPoll
@@ -71,20 +70,7 @@ class VKMatchSenseiBot:
         elif request in COMMANDS_CONFIG.get("show_matches"):
             self.__cmd_handler.show_matches(self.user_id)
         elif request in COMMANDS_CONFIG.get("next_match"):
-            # Получаем payload из события для определения текущего индекса
-            payload_str = getattr(event, 'payload', None)
-            if payload_str:
-                try:
-                    payload = json.loads(payload_str)
-                    logger.info("Получен payload: %s", payload)
-                    current_index = int(payload.get('match_index', 0))
-                    next_index = current_index + 1
-                    self.__cmd_handler.show_matches(self.user_id, next_index)
-                except (json.JSONDecodeError, ValueError) as e:
-                    logger.error("Ошибка при обработке payload: %s", str(e))
-                    self.__cmd_handler.handle_unknown_message(self.user_id)
-            else:
-                self.__cmd_handler.show_matches(self.user_id)
+            self.__cmd_handler.handle_next_match(self.user_id, event)
         else:
             # Обработка неизвестных команд
             self.__cmd_handler.handle_unknown_message(self.user_id)
