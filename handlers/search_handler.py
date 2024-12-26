@@ -165,6 +165,7 @@ class SearchHandler:
 
         matches_manager = DatabaseMatchesManager()
         matches = matches_manager.get_user_matches(user_id)
+        attachment = None
 
         logger.info(
             "Получено %d мэтчей для пользователя %d",
@@ -206,6 +207,9 @@ class SearchHandler:
             profile_url=current_match.profile_url
         )
 
+        if current_match.photo_id:
+            attachment = f"photo{current_match.match_id}_{current_match.photo_id}"
+
         # Определяем какую клавиатуру показывать
         keyboard_name = (
             "match_navigation"
@@ -227,5 +231,6 @@ class SearchHandler:
         self.__msg_service.send_message(
             user_id,
             msg=match_msg,
-            btns=keyboard
+            btns=keyboard,
+            attachment=attachment
         )

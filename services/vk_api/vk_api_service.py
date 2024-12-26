@@ -46,12 +46,29 @@ class VKApiService:
             "user_ids": user_id,
             "access_token": self.token,
             "v": self.api_version,
-            "fields": "city, sex",
+            "fields": "city,sex",
         }
 
         response = requests.get(url, params=params, timeout=10)
 
         return response.json().get("response", [])[0]
+
+    def get_user_photos(self, user_id: int, album: str = "profile", rev: int = 0) \
+        -> dict:
+        """Получение информации о фотографиях пользователя."""
+
+        url = self.api_url + "photos.get"
+        params = {
+            "access_token": self.token,
+            "v": self.api_version,
+            "owner_id": user_id,
+            "album_id": album,
+            "rev": rev,
+        }
+
+        response = requests.get(url, params=params, timeout=10)
+
+        return response.json().get("response", {})
 
     def get_city_info(self, query: str) -> dict | None:
         """
@@ -118,7 +135,7 @@ class VKApiService:
             "count": 1000,
             "offset": offset,
             "fields": "city,sex,last_seen,bdate,relation,\
-                can_write_private_message,photo_max_orig,photo_max",
+                can_write_private_message",
         }
 
         response = requests.get(url, params=params, timeout=10)

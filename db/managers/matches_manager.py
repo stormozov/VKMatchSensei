@@ -26,6 +26,7 @@ class DatabaseMatchesManager:
             for match in matches:
                 match = format_matches(match)
                 new_match = Matches(user_id=user_id, **match)
+
                 if not self.get_user_matches(user_id, match):
                     self.__session.add(new_match)
                     saved_count += 1

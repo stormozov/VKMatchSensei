@@ -124,7 +124,7 @@ class Matches(Base):
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
     profile_url = Column(String(255), nullable=False)
-    photo = Column(String(500))
+    photo_id = Column(Integer)
 
     user = relationship("User", back_populates="matches")
 
