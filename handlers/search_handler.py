@@ -224,8 +224,9 @@ class SearchHandler:
         keyboard = copy.deepcopy(KEYBOARD_CONFIG[keyboard_name])
         if keyboard_name == "match_navigation":
             # Форматируем payload для следующего индекса
+            # Передаем текущий индекс без инкремента, так как инкремент происходит в bot.py
             keyboard["actions"][0]["payload"] = (
-                keyboard["actions"][0]["payload"] % (match_index + 1)
+                keyboard["actions"][0]["payload"] % match_index
             )
 
         self.__msg_service.send_message(

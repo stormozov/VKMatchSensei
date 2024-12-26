@@ -78,7 +78,8 @@ class VKMatchSenseiBot:
                     payload = json.loads(payload_str)
                     logger.info("Получен payload: %s", payload)
                     current_index = int(payload.get('match_index', 0))
-                    self.__cmd_handler.show_matches(self.user_id, current_index + 1)
+                    next_index = current_index + 1
+                    self.__cmd_handler.show_matches(self.user_id, next_index)
                 except (json.JSONDecodeError, ValueError) as e:
                     logger.error("Ошибка при обработке payload: %s", str(e))
                     self.__cmd_handler.handle_unknown_message(self.user_id)
