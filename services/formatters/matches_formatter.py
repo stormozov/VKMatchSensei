@@ -1,5 +1,7 @@
 """Форматирование данных мэтчей для записи в базу данных."""
 
+import time
+
 from services.formatters.db_user_formatter import DatabaseUserFormatServices
 from services.vk_api.vk_api_service import VKApiService
 
@@ -17,6 +19,8 @@ def format_matches(match: dict[str, str | int]) -> dict:
         .get("items", [{"id": 0}])[0]
         .get("id", 0)
     )
+
+    time.sleep(1)
 
     return {
         "match_id": match_id,
