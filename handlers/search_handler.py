@@ -61,8 +61,7 @@ class SearchHandler:
     def search_user_group_handler(self, group_info: list[dict], offset: int = 0) \
         -> list[dict]:
         """Обработка команды поиска групп пользователя."""
-        group_id = group_info[0].get("id")
-        return vk_service.get_group_members(group_id, offset)
+        return vk_service.get_group_members(group_info[0].get("id"), offset)
 
     def search_result_handler(
         self,
@@ -78,13 +77,10 @@ class SearchHandler:
             "Всего было найдено %d пользователей в группе.", len(group_members)
         )
 
-        filtered_members = self.is_preferred_gender(
-            group_members, search_settings
-        )
-        filtered_members = self.is_in_preferred_city(
-            filtered_members, search_settings
-        )
-        filtered_members = self.can_send_message(filtered_members)
+        filtered_members = [
+            member for member in group_members
+            if self.is_member_matching(member, search_settings)
+        ]
 
         logger.info(
             "Отфильтровано %d пользователей, удовлетворяющих условиям поиска.",
@@ -101,13 +97,10 @@ class SearchHandler:
                 len(group_members)
             )
 
-            filtered_members += self.is_preferred_gender(
-                group_members, search_settings
-            )
-            filtered_members = self.is_in_preferred_city(
-                filtered_members, search_settings
-            )
-            filtered_members = self.can_send_message(filtered_members)
+            filtered_members.extend([
+                member for member in group_members
+                if self.is_member_matching(member, search_settings)
+            ])
 
             logger.info(
                 "Отфильтровано %d пользователей, удовлетворяющих условиям поиска.",
@@ -122,29 +115,15 @@ class SearchHandler:
 
         return filtered_members
 
-    def is_preferred_gender(
-        self,
-        members: list[dict],
-        search_settings: UserSearchSettings
-        ) -> list:
-        """Проверка предпочитаемого пола."""
-        return [
-            member
-            for member in members
-            if member.get("sex") == search_settings.sex
-        ]
-
-    def is_in_preferred_city(
-        self,
-        members: list[dict],
-        search_settings: UserSearchSettings
-        ) -> list[dict]:
-        """Проверка вхождения в предпочитаемый город."""
-        return [
-            member
-            for member in members
-            if member.get("city", {}).get("id", 0) == search_settings.city_id
-        ]
+    @staticmethod
+    def is_member_matching(member: dict, search_settings: UserSearchSettings) \
+        -> bool:
+        """Проверяет, соответствует ли участник критериям поиска."""
+        return (
+            member.get("sex") == search_settings.sex
+            and member.get("city", {}).get("id", 0) == search_settings.city_id
+            and member.get("can_write_private_message", 0) == 1
+        )
 
     def load_matches_to_db(self, user_id: int, matches: list[dict]) -> None:
         """Загрузка найденных мэтчей в базу данных."""
@@ -152,14 +131,6 @@ class SearchHandler:
 
     def is_within_age_range(self, member, search_settings) -> bool:
         """Проверка возраста."""
-
-    def can_send_message(self, group_members: list[dict]) -> bool:
-        """Проверка возможности отправки сообщения."""
-        return [
-            member
-            for member in group_members
-            if member.get("can_write_private_message", 0) == 1
-        ]
 
     def show_matches(self, user_id: int, match_index: int = 0) -> None:
         """Показывает найденные мэтчи пользователя по одному."""
@@ -225,7 +196,6 @@ class SearchHandler:
         keyboard = copy.deepcopy(KEYBOARD_CONFIG[keyboard_name])
         if keyboard_name == "match_navigation":
             # Форматируем payload для следующего индекса
-            # Передаем текущий индекс без инкремента, так как инкремент происходит в bot.py
             keyboard["actions"][0]["payload"] = (
                 keyboard["actions"][0]["payload"] % match_index
             )
