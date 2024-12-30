@@ -67,6 +67,7 @@ class VKMatchSenseiBot:
             self.__cmd_handler.search_settings_handler(request, self.user_id)
         elif request in COMMANDS_CONFIG.get("start_searching"):
             self.__cmd_handler.start_searching(self.user_id)
+            self.__cmd_handler.show_matches(self.user_id)
         elif request in COMMANDS_CONFIG.get("show_matches"):
             self.__cmd_handler.show_matches(self.user_id)
         elif request in COMMANDS_CONFIG.get("next_match"):

@@ -68,25 +68,48 @@ class SearchHandler:
         group_members: list[dict],
         search_settings: UserSearchSettings,
         group_info: list[dict]
-        ) -> list[dict]:
+    ) -> list[dict]:
         """Обработка команды поиска результата."""
-
-        offset = 0
 
         logger.info(
             "Всего было найдено %d пользователей в группе.", len(group_members)
         )
 
-        filtered_members = [
-            member for member in group_members
-            if self.is_member_matching(member, search_settings)
-        ]
+        filtered_members = self.filter_members(group_members, search_settings)
 
         logger.info(
             "Отфильтровано %d пользователей, удовлетворяющих условиям поиска.",
             len(filtered_members)
         )
 
+        filtered_members = self.fetch_additional_members(
+            group_info,
+            search_settings,
+            filtered_members,
+            0
+        )
+
+        return filtered_members
+
+    def filter_members(
+        self,
+        group_members: list[dict],
+        search_settings: UserSearchSettings
+    ) -> list[dict]:
+        """Фильтрует участников на основе настроек поиска."""
+        return [
+            member for member in group_members
+            if self.is_member_matching(member, search_settings)
+        ]
+
+    def fetch_additional_members(
+        self,
+        group_info: list[dict],
+        search_settings: UserSearchSettings,
+        filtered_members: list[dict],
+        offset: int
+    ) -> list[dict]:
+        """Получает дополнительных участников, если найдено менее 25."""
         while len(filtered_members) < 25:
             logger.info(
                 "Найдено менее 25 пользователей, выполняется новый поиск..."
@@ -97,10 +120,9 @@ class SearchHandler:
                 len(group_members)
             )
 
-            filtered_members.extend([
-                member for member in group_members
-                if self.is_member_matching(member, search_settings)
-            ])
+            filtered_members.extend(self.filter_members(
+                group_members, search_settings
+            ))
 
             logger.info(
                 "Отфильтровано %d пользователей, удовлетворяющих условиям поиска.",
