@@ -2,6 +2,7 @@
 
 import copy
 import json
+
 from config.bot_config import KEYBOARD_CONFIG, MESSAGES_CONFIG
 from db.managers.matches_manager import DatabaseMatchesManager
 from db.managers.user_manager import DatabaseUserManager
@@ -91,6 +92,31 @@ class SearchHandler:
 
         return filtered_members
 
+    def show_matches(self, user_id: int, match_index: int = 0) -> None:
+        """Показывает найденные мэтчи пользователя по одному."""
+
+        matches = self.get_user_matches(user_id)
+        if not matches:
+            self.handle_no_matches(user_id)
+            return
+
+        match_index = self.validate_match_index(match_index, len(matches))
+        if match_index == 0:
+            self.send_start_message(user_id, len(matches))
+
+        match_msg, attachment = self.format_match_message(matches[match_index])
+
+        keyboard = self.get_keyboard_for_match_navigation(
+            match_index, len(matches)
+        )
+
+        self.__msg_service.send_message(
+            user_id,
+            msg=match_msg,
+            btns=keyboard,
+            attachment=attachment
+        )
+
     def filter_members(
         self,
         group_members: list[dict],
@@ -154,45 +180,43 @@ class SearchHandler:
     def is_within_age_range(self, member, search_settings) -> bool:
         """Проверка возраста."""
 
-    def show_matches(self, user_id: int, match_index: int = 0) -> None:
-        """Показывает найденные мэтчи пользователя по одному."""
-
+    def get_user_matches(self, user_id: int) -> list:
+        """Получает мэтчи пользователя из базы данных."""
         matches_manager = DatabaseMatchesManager()
-        matches = matches_manager.get_user_matches(user_id)
-        attachment = None
+        return matches_manager.get_user_matches(user_id)
 
-        logger.info(
-            "Получено %d мэтчей для пользователя %d",
-            len(matches) if matches else 0, user_id
+    def handle_no_matches(self, user_id: int) -> None:
+        """Обрабатывает случай, когда нет найденных мэтчей."""
+        self.__msg_service.send_message(
+            user_id,
+            msg=MESSAGES_CONFIG.get(
+                "no_matches_found", MESSAGES_CONFIG.get("error")
+            ),
+            btns=KEYBOARD_CONFIG["main_menu"]
         )
 
-        if not matches:
-            self.__msg_service.send_message(
-                user_id,
-                msg=MESSAGES_CONFIG.get(
-                    "no_matches_found", MESSAGES_CONFIG.get("error")
-                ),
-                btns=KEYBOARD_CONFIG["main_menu"]
-            )
-            return
-
-        # Проверяем валидность индекса
-        if match_index >= len(matches):
+    def validate_match_index(self, match_index: int, total_matches: int) -> int:
+        """Проверяет валидность индекса мэтча."""
+        if match_index >= total_matches:
             logger.info(
                 "Индекс %d превышает количество мэтчей, сброс на начало",
                 match_index
             )
-            match_index = 0
+            return 0
+        return match_index
 
-        if match_index == 0:
-            self.__msg_service.send_message(
-                user_id,
-                msg=MESSAGES_CONFIG.get(
-                    "show_matches_start", MESSAGES_CONFIG.get("error")
-                ) % len(matches)
-            )
+    def send_start_message(self, user_id: int, total_matches: int) -> None:
+        """Отправляет сообщение о начале показа мэтчей."""
+        self.__msg_service.send_message(
+            user_id,
+            msg=MESSAGES_CONFIG.get(
+                "show_matches_start", MESSAGES_CONFIG.get("error")
+            ) % total_matches
+        )
 
-        current_match = matches[match_index]
+    def format_match_message(self, current_match) -> tuple:
+        """Форматирует сообщение о текущем мэтче."""
+
         match_msg = MESSAGES_CONFIG.get(
             "show_match_template", MESSAGES_CONFIG.get("error")
         ).format(
@@ -201,18 +225,27 @@ class SearchHandler:
             profile_url=current_match.profile_url
         )
 
-        if current_match.photo_id:
-            attachment = f"photo{current_match.match_id}_{current_match.photo_id}"
+        attachment = (
+            f"photo{current_match.match_id}_{current_match.photo_id}"
+            if current_match.photo_id
+            else None
+        )
 
-        # Определяем какую клавиатуру показывать
+        return match_msg, attachment
+
+    def get_keyboard_for_match_navigation(
+        self, match_index: int, total_matches: int
+        ) -> dict:
+        """Определяет, какую клавиатуру показывать."""
+
         keyboard_name = (
             "match_navigation"
-            if match_index < len(matches) - 1
+            if match_index < total_matches - 1
             else "main_menu"
         )
         logger.info(
             "Используется клавиатура %s для индекса %d из %d", 
-            keyboard_name, match_index, len(matches)
+            keyboard_name, match_index, total_matches
         )
 
         keyboard = copy.deepcopy(KEYBOARD_CONFIG[keyboard_name])
@@ -222,12 +255,7 @@ class SearchHandler:
                 keyboard["actions"][0]["payload"] % match_index
             )
 
-        self.__msg_service.send_message(
-            user_id,
-            msg=match_msg,
-            btns=keyboard,
-            attachment=attachment
-        )
+        return keyboard
 
     def handle_next_match(self, user_id: int, event) -> None:
         """Обработка команды показа следующего мэтча."""
